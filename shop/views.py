@@ -5,6 +5,7 @@ from shop.models import *
 from shop.utils import get_cart
 from django.views.generic.edit import CreateView
 from django import forms
+from shop.forms import CartAddProductForm
 
 class ProductList(ListView):
     model = Product
@@ -22,6 +23,9 @@ class ProdutDetail(DetailView):
         return context
 
 class ProductForm(forms.ModelForm):
+    
+    short_description = forms.CharField(widget=forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}), required=False)
+
     class Meta:
         model = Product
         fields = ['name', 'description', 'price', 'category']
@@ -31,7 +35,6 @@ class ProductForm(forms.ModelForm):
         if Product.objects.filter(name=name).exists():
             raise forms.ValidationError("Product with this name already exists")
         return name
-
 
 class ProductCreate(CreateView):
     model = Product
@@ -70,4 +73,6 @@ def cart_remove(request, pk):
 def cart_update(request, pk):
     cart_item = get_object_or_404(CartItem, pk=pk)
     quantity = request.POST.get('quantity')
-    cart_ite
+    cart_item.quantity = quantity
+    cart_item.save()
+    return redirect('shop:cart-detail')
